@@ -16,29 +16,6 @@ checkeddirs = []
 #directory path : [combined size of all java files in bytes, # of instances of 'public', # of instances of 'private', # of instances of 'try', # of instances of 'catch']
 dirinfo = {}
 
-def dirinfoget(a_path): #finds and returns applicable information about the given directory
-    pathinfo = [0, 0, 0, 0, 0]
-    
-    #add the given path to our two lists of information, so that subdirectories are listed after their parents
-    checkeddirs.append(a_path)
-    dirinfo[a_path] = pathinfo
-    
-    pathdirs = os.listdir(a_path)
-    for adir in pathdirs:
-        if re.match("*\\.java",adir):
-            #if it's a java file, get its info and add it to the info for this directory
-            javainfo = fileinfoget(a_path + adir)
-            for i in range(0,5):
-                pathinfo[i] = pathinfo[i] + javainfo[i]
-            
-        elif not os.listdir(a_path + adir + "/"):
-            #if it's another directory with more files or folders, recurse and then add the returned info to this directory's info
-            innerinfo = dirinfoget(a_path + adir + "/")
-            for i in range(0,5):
-                pathinfo[i] = pathinfo[i] + innerinfo[i]
-    dirinfo[a_path] = pathinfo
-    return pathinfo
-    
 def fileinfoget(a_file): #finds and returns applicable information about the given .java file
     fileinfo = [0, 0, 0, 0, 0]
     commented = false
@@ -62,6 +39,29 @@ def fileinfoget(a_file): #finds and returns applicable information about the giv
             else:
                 if re.match("*\\*/",word): commented = false
     return fileinfo
+
+def dirinfoget(a_path): #finds and returns applicable information about the given directory
+    pathinfo = [0, 0, 0, 0, 0]
+    
+    #add the given path to our two lists of information, so that subdirectories are listed after their parents
+    checkeddirs.append(a_path)
+    dirinfo[a_path] = pathinfo
+    
+    pathdirs = os.listdir(a_path)
+    for adir in pathdirs:
+        if re.match("*\\.java",adir):
+            #if it's a java file, get its info and add it to the info for this directory
+            javainfo = fileinfoget(a_path + adir)
+            for i in range(0,5):
+                pathinfo[i] = pathinfo[i] + javainfo[i]
+            
+        elif not os.listdir(a_path + adir + "/"):
+            #if it's another directory with more files or folders, recurse and then add the returned info to this directory's info
+            innerinfo = dirinfoget(a_path + adir + "/")
+            for i in range(0,5):
+                pathinfo[i] = pathinfo[i] + innerinfo[i]
+    dirinfo[a_path] = pathinfo
+    return pathinfo
 
 runthis = dirinfoget(srcpath)
 for check in checkeddirs:
